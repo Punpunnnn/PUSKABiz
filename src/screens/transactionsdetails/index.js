@@ -191,7 +191,6 @@ const TransactionDetail = () => {
       <View style={styles.contentContainer}>
         {/* Order Status */}
           <View style={styles.statusSection}>
-            <Text style={styles.sectionTitle}>Status Pesanan</Text>
             <View style={[styles.statusBadge, { alignSelf: 'flex-start' }]}>
               <OrderStatusBadge status={order.status} />
             </View>
@@ -241,7 +240,7 @@ const TransactionDetail = () => {
         <View style={styles.priceSection}>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Harga Asli</Text>
-            <Text style={styles.priceValue}>Rp.{order.originalTotal?.toLocaleString("id-ID") || 0},00</Text>
+            <Text style={styles.priceValue}>Rp.{order.total.toLocaleString("id-ID") || 0},00</Text>
           </View>
           <View style={styles.priceRow}>
             <View style={styles.coinRow}>
@@ -252,7 +251,7 @@ const TransactionDetail = () => {
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>Rp.{order.total?.toLocaleString("id-ID") || 0},00</Text>
+            <Text style={styles.totalValue}>Rp.{order.originalTotal?.toLocaleString("id-ID") || 0},00</Text>
           </View>
         </View>
 

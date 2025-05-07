@@ -8,7 +8,6 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ Ambil semua pesanan restoran
   const getRestaurantOrders = async (id) => {
     try {
       setLoading(true);
@@ -63,7 +62,7 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
       const processedOrders = ordersData.map(order => ({
         id: order.id,
         username: order.user_id?.full_name,
-        userId: order.user_id?.id, // ✅ FIX: string UUID
+        userId: order.user_id?.id,
         dishesCount: dishesByOrderId[order.id]?.length || 0,
         dishes: dishesByOrderId[order.id] || [],
         createdAt: order.created_at,
@@ -84,7 +83,6 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
     }
   };
 
-  // ✅ Ambil satu order lengkap
   const getRestaurantOrder = async (orderId) => {
     try {
       const { data: order, error } = await supabase
@@ -125,7 +123,7 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
       return {
         id: order.id,
         username: order.user_id?.full_name,
-        userId: order.user_id?.id, // ✅ FIX: string UUID
+        userId: order.user_id?.id,
         dishes,
         createdAt: order.created_at,
         originalTotal: order.original_total,
@@ -141,95 +139,112 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
     }
   };
 
-  // ✅ Refresh order list
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      const { data: orderData, error: fetchError } = await supabase
+        .from('orders')
+        .select('user_id, used_coin, total')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const updates = [];
+
+      if (status === 'CANCELLED' && orderData.used_coin > 0) {
+        updates.push(
+          supabase.rpc('increment_coins', {
+            user_id_param: orderData.user_id,
+            coin_amount: orderData.used_coin,
+          })
+        );
+      }
+
+        if (status === 'COMPLETED' && orderData.used_coin === 0) {
+          const { total, user_id } = orderData;
+          console.log('Total belanja:', total);
+          console.log('User ID:', user_id);
+        
+          // Jika total belanja >= 10.000, beri koin (1% dari total)
+          if (total >= 10000) {
+            const coinToAdd = Math.floor(total * 0.01); // Misal 15000 => 150
+            console.log('Koin yang akan diberikan:', coinToAdd);
+        
+            updates.push(
+              supabase.rpc('increment_coins', {
+                user_id_param: user_id,
+                coin_amount: coinToAdd,
+              })
+            );
+          }
+        }
+      updates.push(
+        supabase
+          .from('orders')
+          .update({ order_status: status })
+          .eq('id', orderId)
+      );
+
+      const results = await Promise.all(updates);
+
+      for (const result of results) {
+        if (result.error) throw result.error;
+      }
+
+      // Perbarui state lokal jika berhasil
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === orderId ? { ...order, status } : order
+        )
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
   const refreshOrders = () => {
     if (restaurantId) {
       getRestaurantOrders(restaurantId);
     }
   };
 
-  // ✅ Update status order & beri koin
-  const updateOrderStatus = async (orderId, newStatus) => {
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('orders')
-        .update({ order_status: newStatus })
-        .eq('id', orderId);
-  
-      if (error) throw error;
-  
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === orderId ? { ...order, status: newStatus } : order
-        )
-      );
-  
-      // Jika status baru adalah "COMPLETED", tambahkan koin
-      if (newStatus === 'COMPLETED') {
-        const order = orders.find(o => o.id === orderId);
-        if (order && order.total >= 10000) {
-          const coinsToAdd = Math.floor(order.total / 100);
-          await updateUserCoins(order.userId, coinsToAdd);
-        }
-      }
-  
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating order status:', error);
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   const updateUserCoins = async (userId, coinsToAdd) => {
-    console.log('User ID:', userId);
-    console.log('Coins to add:', coinsToAdd);
-  
     try {
-      // Ambil data pengguna untuk mendapatkan jumlah koin saat ini
       const { data: userData, error: fetchError } = await supabase
         .from('profiles')
         .select('coins')
         .eq('id', userId)
         .single();
 
-  
-      // Jika ada error dalam mengambil data, lempar error
       if (fetchError) throw fetchError;
-  
-      // Tentukan jumlah koin baru
+
       const currentCoins = userData.coins || 0;
-      console.log('Current coins:', currentCoins);
       const newCoins = currentCoins + coinsToAdd;
-      console.log('New coins:', newCoins);
-  
-      // Lakukan update koin di database
-      const { data, error: updateError } = await supabase
+
+      const { error: updateError } = await supabase
         .from('profiles')
         .update({ coins: newCoins })
-        .eq('id', userId)
-        .select();
-  
-      // Jika terjadi error saat update, lempar error
-      if (updateError) {
-        console.error('Error updating coins:', updateError);
-        return { success: false, error: updateError.message };
-      }
-      console.log('Successfully updated coins');
+        .eq('id', userId);
+        console.log('Updating user ID:', userId);
+
+
+      console.log('Updated coins:', newCoins);
+
+      if (updateError) throw updateError;
+
       return { success: true, coinsAdded: coinsToAdd };
     } catch (error) {
-      // Tangani error jika terjadi saat proses
       console.error('Error updating user coins:', error);
       return { success: false, error: error.message };
     }
   };
-  // ✅ Fetch otomatis saat mount
+
   useEffect(() => {
-    if (restaurantId) {
-      getRestaurantOrders(restaurantId);
-    }
+    if (!restaurantId) return;
+    getRestaurantOrders(restaurantId);
   }, [restaurantId]);
 
   return (
@@ -250,7 +265,6 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
   );
 };
 
-// ✅ Custom hook
 export const useRestaurantOrders = () => {
   const context = useContext(RestaurantOrderContext);
   if (!context) {

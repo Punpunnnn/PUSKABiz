@@ -68,7 +68,7 @@ const MonthlySales = () => {
             {isDownloading ? (
               <ActivityIndicator size="small" color="white" />
             ) : (
-              <Text style={styles.buttonText}>Unduh Laporan</Text>
+              <Text style={styles.buttonText}>Unduh Data</Text>
             )}
           </TouchableOpacity>
           
@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   downloadButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#5DA574',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,

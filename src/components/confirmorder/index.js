@@ -12,7 +12,7 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
   
   const handleViewDetail = () => {
     // Logic to view order details
-    navigation.navigate('OrderDetail', { orderId: order.id }); // Replace 'OrderDetail' with the actual screen name('View details for order:', order.id);
+    navigation.navigate('TransactionDetail', { orderId: order.id }); // Replace 'OrderDetail' with the actual screen name('View details for order:', order.id);
   };
   
   const handleReject = () => {
@@ -68,7 +68,6 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
     return date.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
-      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -77,46 +76,47 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
   return (
     <View style={styles.orderCard}>
       <View style={styles.orderHeader}>
-        <Text style={styles.orderId}>Order #{order.id}</Text>
+        <Text style={styles.orderId}>ORD-{order.id}</Text>
         <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
       </View>
-      
-      <View style={styles.orderDetails}>
-        <View>
-          <Text style={styles.customerName}>{order.username}</Text>
-          <Text style={styles.productInfo}>{order.dishesCount} Produk</Text>
-          <TouchableOpacity onPress={handleViewDetail}>
-            <Text style={styles.viewDetail}>Lihat Detail</Text>
-          </TouchableOpacity>
-        </View>
-        
-        <View style={styles.priceContainer}>
-          <Text style={styles.price}>Rp {order.total}</Text>
-        </View>
-      </View>
-      
+
+  <View style={styles.orderDetails}>
+    <View>
+      <Text style={styles.customerName}>{order.username}</Text>
+      <Text style={styles.productInfo}>{order.dishesCount} Produk</Text>
+      <TouchableOpacity onPress={handleViewDetail}>
+        <Text style={styles.viewDetail}>Lihat Detail</Text>
+      </TouchableOpacity>
+    </View>
+
+    <View style={styles.priceContainer}>
+      <Text style={styles.price}>Rp {order.originalTotal.toLocaleString('id-ID')}</Text>
       <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={styles.rejectButton} 
-          onPress={handleReject}
-          disabled={loading}
-        >
-          <Text style={styles.rejectText}>Tolak</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[
-            styles.acceptButton,
-            order.status === 'COOKING' && styles.disabledButton
-          ]} 
-          onPress={handleAccept}
-          disabled={loading || order.status === 'COOKING'}
-        >
-          <Text style={styles.acceptText}>
-            {order.status === 'COOKING' ? 'Diterima' : 'Terima'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <TouchableOpacity 
+      style={styles.rejectButton} 
+      onPress={handleReject}
+      disabled={loading}
+    >
+      <Text style={styles.rejectText}>Tolak</Text>
+    </TouchableOpacity>
+    
+    <TouchableOpacity 
+      style={[
+        styles.acceptButton,
+        order.status === 'COOKING' && styles.disabledButton
+      ]} 
+      onPress={handleAccept}
+      disabled={loading || order.status === 'COOKING'}
+    >
+      <Text style={styles.acceptText}>
+        {order.status === 'COOKING' ? 'Diterima' : 'Terima'}
+      </Text>
+    </TouchableOpacity>
+  </View>
+    </View>
+  </View>
+
+  
       
       {/* Accept Order Confirmation Modal */}
       <Modal
@@ -193,20 +193,25 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
 
 const styles = StyleSheet.create({
   orderCard: {
-    backgroundColor: 'white',
-    borderRadius: 8,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF7043',
-    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  borderRadius: 12,
+  padding: 16,
+  marginBottom: 12,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+  elevation: 2,
+  borderLeftWidth: 4,
+  borderLeftColor: '#FF5722', // garis orange di sisi kiri
   },
   orderHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 12,
-    paddingBottom: 8,
+    marginBottom: 12,
   },
   orderId: {
+    fontSize: 20,
     fontWeight: 'bold',
   },
   orderDate: {
@@ -215,11 +220,9 @@ const styles = StyleSheet.create({
   orderDetails: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingBottom: 8,
   },
   customerName: {
-    fontWeight: 'bold',
+    fontSize: 16,
     marginBottom: 4,
   },
   productInfo: {
@@ -230,12 +233,14 @@ const styles = StyleSheet.create({
   viewDetail: {
     color: '#B02E26',
     fontSize: 12,
-  },
-  priceContainer: {
-    justifyContent: 'center',
+    marginTop: 8,
+    textDecorationLine: 'underline',
   },
   price: {
     fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'right',
+    marginBottom: 20,
   },
   discount: {
     color: '#4CAF50',
@@ -245,20 +250,19 @@ const styles = StyleSheet.create({
   actionButtons: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   rejectButton: {
-    padding: 12,
-    alignItems: 'center',
-    backgroundColor: '#f44336',
-    flex: 1,
+    backgroundColor: '#E53935',
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  borderRadius: 8,
   },
   acceptButton: {
-    padding: 12,
-    alignItems: 'center',
-    backgroundColor: '#4CAF50',
-    flex: 1,
+    backgroundColor: '#43A047',
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  borderRadius: 8,
+  marginLeft: 8,
   },
   disabledButton: {
     backgroundColor: '#A5D6A7',

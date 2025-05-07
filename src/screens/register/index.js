@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
-  View, Text, TextInput, Pressable, Image,
+  Text, TextInput, Pressable, Image,
   ActivityIndicator, TouchableOpacity, Alert,
   StyleSheet, ScrollView
 } from 'react-native';
@@ -143,7 +143,7 @@ const RegisterScreen = ({ navigation }) => {
       Alert.alert(
         'Berhasil!',
         'Akun berhasil dibuat. Silakan cek email untuk verifikasi.',
-        [{ text: 'OK', onPress: () => navigation.navigate('Dashboard') }]
+        [{ text: 'OK'}]
       );
     } catch (err) {
       console.error('Unhandled Error:', err);

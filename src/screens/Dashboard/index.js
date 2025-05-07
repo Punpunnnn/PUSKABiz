@@ -44,14 +44,14 @@ const RestaurantDashboard = () => {
       <View style={styles.dailyStatsContainer}>
         <View style={styles.dailyStat}>
           <View style={styles.dailyStatHeader}>
-            <Text style={styles.dailyStatLabel}>Pendapatan Hari Ini</Text>
+            <Text style={styles.dailyStatLabel}>Pendapatan hari ini</Text>
           </View>
           <Text style={styles.dailyStatValue}>{formatCurrency(dailyProfit)}</Text>
         </View>
         
         <View style={styles.dailyStat}>
           <View style={styles.dailyStatHeader}>
-            <Text style={styles.dailyStatLabel}>Total Pesanan Harian</Text>
+            <Text style={styles.dailyStatLabel}>Total Pesanan hari ini</Text>
           </View>
           <Text style={styles.dailyStatValue}>{dailyOrder} Pesanan</Text>
         </View>
@@ -85,32 +85,33 @@ const RestaurantDashboard = () => {
     </SafeAreaView>
   );
 };
-
-// Your styles would go here...
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#Fcfcfc',
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    // Added to align items properly
+    backgroundColor: '#8A1538',
+    padding: 16,
+    paddingRight: 0,
     },
     headerLeft: {
-      backgroundColor: '#88362F',
-      padding: 16,
-      paddingTop: 24,
-      flex: 0.8, // Adjusted to control the width
-      // Added to take up available space
+      marginTop: 16,
+      flex: 1,
+      justifyContent: 'center',
     },
     headerRight: {
-      backgroundColor: 'OPEN' ? '#4CAF50' : '#FFC107', // Dynamically set background color
-      padding: 16,
-      alignItems: 'center', // Centered the text
-      justifyContent: 'center', // Ensure content is vertically centered
-      flex: 0.2, // Adjusted to control the width
+      backgroundColor: 'OPEN' ? '#5DA574' : '#FFC107',
+      marginTop: 16,
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderTopLeftRadius: 12,
+      borderBottomLeftRadius: 12,
+      marginLeft: -20,
+      alignSelf: 'stretch',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     headerTitle: {
       color: 'white',
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
       textAlign: 'center', // Centered the text
     },
   toprow: {
-    backgroundColor: '#88362F',
+    backgroundColor: '#8A1538',
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
@@ -161,12 +162,28 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   pendingTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+    textAlign: 'center',
     marginBottom: 16,
   },
   ordersList: {
     flex: 1,
+  },
+  noOrdersText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 16,
   },
   bottomNav: {
     flexDirection: 'row',

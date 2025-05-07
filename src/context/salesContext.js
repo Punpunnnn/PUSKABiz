@@ -52,14 +52,14 @@ export const SalesProvider = ({ children }) => {
 
       const [currentRes, previousRes] = await Promise.all([
         supabase.from('orders')
-          .select('total')
+          .select('original_total')
           .gte('created_at', current.start)
           .lte('created_at', current.end)
           .eq('order_status', 'COMPLETED')
           .eq('restaurants_id', restaurantId),
 
         supabase.from('orders')
-          .select('total')
+          .select('original_total')
           .gte('created_at', previous.start)
           .lte('created_at', previous.end)
           .eq('order_status', 'COMPLETED')
@@ -68,8 +68,8 @@ export const SalesProvider = ({ children }) => {
 
       if (currentRes.error || previousRes.error) throw currentRes.error || previousRes.error;
 
-      const currentTotal = currentRes.data.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
-      const prevTotal = previousRes.data.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+      const currentTotal = currentRes.data.reduce((sum, o) => sum + (parseFloat(o.original_total) || 0), 0);
+      const prevTotal = previousRes.data.reduce((sum, o) => sum + (parseFloat(o.original_total) || 0), 0);
 
       setTotalProfit(currentTotal);
       setGrowthPercentage(prevTotal > 0 ? `${((currentTotal - prevTotal) / prevTotal * 100).toFixed(2)}%` : 'N/A');
@@ -91,7 +91,7 @@ export const SalesProvider = ({ children }) => {
       const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString();
 
       const { data, error } = await supabase.from('orders')
-        .select('total')
+        .select('original_total')
         .gte('created_at', start)
         .lt('created_at', end)
         .eq('order_status', 'COMPLETED')
@@ -99,7 +99,7 @@ export const SalesProvider = ({ children }) => {
 
       if (error) throw error;
 
-      setDailyProfit(data.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0));
+      setDailyProfit(data.reduce((sum, o) => sum + (parseFloat(o.original_total) || 0), 0));
       setDailyOrder(data.length);
 
     } catch (err) {

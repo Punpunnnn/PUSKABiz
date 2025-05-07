@@ -8,7 +8,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import RatingProvider from './src/context/ratingContext';
 import { AuthProvider } from './src/context/authContext';
 import { MenuProvider } from './src/context/menuContext';
-import AppNavigator from './src/navigation/appNavigator';
+import RootNavigator from './src/navigation/RootNavigator';
 
 export default function App() {
   const [restaurantId, setRestaurantId] = useState(null);
@@ -19,28 +19,27 @@ export default function App() {
     const getRestaurantData = async () => {
       try {
         setLoading(true);
-        
-        // Get current authenticated user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        
-        if (userError) throw userError;
-        
-        if (user) {
-          // Get restaurant data for the current user
-          const { data: restaurant, error: restaurantError } = await supabase
-            .from('restaurants')
-            .select('id')
-            .eq('owner_id', user.id)
-            .single();
-          
-          if (restaurantError && restaurantError.code !== 'PGRST116') {
-            // PGRST116 is the error code for no results
-            throw restaurantError;
-          }
-          
-          if (restaurant) {
-            setRestaurantId(restaurant.id);
-          }
+  
+        // Pastikan session ada terlebih dahulu
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+  
+        const user = sessionData?.session?.user;
+        if (!user) throw new Error('User not logged in');
+  
+        // Get restaurant data for the current user
+        const { data: restaurant, error: restaurantError } = await supabase
+          .from('restaurants')
+          .select('id')
+          .eq('owner_id', user.id)
+          .single();
+  
+        if (restaurantError && restaurantError.code !== 'PGRST116') {
+          throw restaurantError;
+        }
+  
+        if (restaurant) {
+          setRestaurantId(restaurant.id);
         }
       } catch (error) {
         console.error('Error fetching restaurant data:', error);
@@ -48,9 +47,10 @@ export default function App() {
         setLoading(false);
       }
     };
-    
+  
     getRestaurantData();
   }, []);
+  
 
   if (loading) {
     // Show loading screen
@@ -64,7 +64,7 @@ export default function App() {
       <MenuProvider>
       <SalesProvider>
       <RatingProvider>
-        <AppNavigator />
+        <RootNavigator />
       </RatingProvider>
       </SalesProvider>
       </MenuProvider>

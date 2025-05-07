@@ -1,4 +1,4 @@
-import React, { useState} from 'react';
+import React, { useState, useRef} from 'react';
 import { 
   View, 
   Text, 
@@ -7,7 +7,9 @@ import {
   FlatList, 
   TouchableOpacity,
   SafeAreaView,
-  StatusBar
+  StatusBar,
+  TouchableWithoutFeedback,
+  Dimensions
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import OrderList from '../../components/orderlist';
@@ -19,6 +21,9 @@ const Transactions = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [filterOption, setFilterOption] = useState('Semua');
     const [showFilterOptions, setShowFilterOptions] = useState(false);
+    const filterButtonRef = useRef(null);
+    const [buttonLayout, setButtonLayout] = useState(null);
+
 
     const filterOptions = ['Semua', 'Selesai', 'Siap Diambil', 'Dibatalkan', 'Diproses','Tertunda'];
 
@@ -62,9 +67,9 @@ const Transactions = () => {
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle="dark-content" backgroundColor="#f5f5f5" />
-            
+            <View style={styles.statusBar}>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Transaksi</Text>
+                <Text style={styles.headerTitle}>Daftar Pesanan</Text>
             </View>
             
             <View style={styles.searchFilterContainer}>
@@ -72,47 +77,63 @@ const Transactions = () => {
                     <Feather name="search" size={20} color="#999" style={styles.searchIcon} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Cari transaksi..."
+                        placeholder="Cari pesanan..."
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                 </View>
-                
                 <TouchableOpacity 
+                    ref={filterButtonRef}
                     style={styles.filterButton}
-                    onPress={() => setShowFilterOptions(!showFilterOptions)}
-                >
+                    onPress={() => {
+                        filterButtonRef.current?.measure((fx, fy, width, height, px, py) => {
+                        setButtonLayout({ x: px, y: py + height, width });
+                        setShowFilterOptions(!showFilterOptions);
+                        });
+                    }}
+                    >
                     <Feather name="filter" size={18} color="#333" />
                     <Text style={styles.filterText}>{filterOption}</Text>
                     <Feather name="chevron-down" size={18} color="#333" />
                 </TouchableOpacity>
             </View>
+            </View>
             
-            {showFilterOptions && (
-                <View style={styles.filterOptionsContainer}>
-                    {filterOptions.map((option) => (
+            {showFilterOptions && buttonLayout && (
+                    <View
+                        style={[
+                        styles.dropdown,
+                        {
+                            top: buttonLayout.y,
+                            left: buttonLayout.x,
+                            width: buttonLayout.width,
+                        }
+                        ]}
+                    >
+                        {filterOptions.map((option) => (
                         <TouchableOpacity
                             key={option}
                             style={[
-                                styles.filterOption,
-                                filterOption === option && styles.selectedFilterOption
+                            styles.filterOption,
+                            filterOption === option && styles.selectedFilterOption,
                             ]}
                             onPress={() => handleFilterSelect(option)}
                         >
-                            <Text style={[
+                            <Text
+                            style={[
                                 styles.filterOptionText,
-                                filterOption === option && styles.selectedFilterOptionText
-                            ]}>
-                                {option}
+                                filterOption === option && styles.selectedFilterOptionText,
+                            ]}
+                            >
+                            {option}
                             </Text>
                         </TouchableOpacity>
-                    ))}
-                </View>
-            )}
-            
+                        ))}
+                    </View>
+                    )}
+
             <View style={styles.contentContainer}>
-                <Text style={styles.sectionTitle}>Riwayat Pesanan</Text>
-                
+            
                 {orders.length > 0 ? (
                     <FlatList
                         data={filteredOrders}
@@ -130,7 +151,7 @@ const Transactions = () => {
                     />
                 ) : (
                     <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No transactions available</Text>
+                        <Text style={styles.emptyText}>Tidak ada pesanan</Text>
                     </View>
                 )}
             </View>
@@ -141,7 +162,26 @@ const Transactions = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#FAF9F6",
+        backgroundColor: "#fcfcfc",
+        position: 'relative',
+    },
+    dropdown: {
+        position: 'absolute',
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        elevation: 6,
+        paddingVertical: 6,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+        zIndex: 99,
+      },      
+    statusBar: {
+        backgroundColor: "#8A1538",
+        marginBottom: 20,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
     },
     header: {
         paddingHorizontal: 20,
@@ -150,12 +190,13 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 24,
+        color: '#fcfcfc',
         fontWeight: 'bold',
     },
     searchFilterContainer: {
         flexDirection: 'row',
         paddingHorizontal: 20,
-        marginBottom: 10,
+        marginBottom: 20,
     },
     searchContainer: {
         flex: 1,
@@ -178,28 +219,42 @@ const styles = StyleSheet.create({
     filterButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'white',
-        borderRadius: 8,
+        backgroundColor: '#F2F2F2',
         paddingHorizontal: 12,
-        height: 44,
-    },
+        paddingVertical: 8,
+        borderRadius: 8,
+        zIndex: 20, // Lebih tinggi dari dropdown
+        elevation: 5, // Untuk Android
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },      
     filterText: {
         marginHorizontal: 6,
         fontSize: 15,
         color: '#333',
     },
     filterOptionsContainer: {
+        position: 'absolute',
+        top: 60, // Sesuaikan ini agar muncul di bawah tombol
+        left: 16,
+        right: 16,
         backgroundColor: 'white',
-        marginHorizontal: 20,
-        marginBottom: 16,
         borderRadius: 8,
-        padding: 8,
+        paddingVertical: 8,
         elevation: 4,
+        zIndex: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
+        shadowOpacity: 0.15,
         shadowRadius: 4,
-    },
+      },
+      overlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'transparent',
+        zIndex: 9,
+      },
     filterOption: {
         paddingVertical: 10,
         paddingHorizontal: 12,

@@ -11,6 +11,7 @@ export const MenuProvider = ({ children }) => {
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(false);
   const { restaurantId } = useAuth(); // Get restaurantId from AuthContext
+  
 
   const fetchMenus = async () => {
     if (!restaurantId) return;

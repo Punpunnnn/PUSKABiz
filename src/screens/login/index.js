@@ -16,7 +16,6 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert('Login Error', error.message);
     } else {
       Alert.alert('Login Berhasil', 'Selamat datang kembali!');
-      navigation.navigate('MainApp');
     }
   };
 

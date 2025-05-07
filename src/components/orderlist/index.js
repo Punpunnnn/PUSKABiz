@@ -42,7 +42,7 @@ const OrderList = ({ order}) => {
         
         <View style={styles.priceContainer}>
         <OrderStatusBadge status={order.status} />
-          <Text style={styles.price}>Rp. {order.total ? order.total.toLocaleString() : '0'}</Text>
+          <Text style={styles.price}>Rp. {order.originalTotal ? order.originalTotal.toLocaleString() : '0'}</Text>
         </View>
       </View>
     </View>
