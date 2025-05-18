@@ -7,7 +7,6 @@ import { useSales } from '../../context/salesContext'; // Import the context hoo
 const MonthlySales = () => {
   const [showInfoModal, setShowInfoModal] = useState(false);
   
-  // Use the sales context
   const {
     totalProfit,
     growthPercentage,
@@ -21,7 +20,6 @@ const MonthlySales = () => {
     downloadSalesReport
   } = useSales();
   
-  // Show info modal
   const showInfo = () => {
     setShowInfoModal(true);
   };
@@ -81,7 +79,6 @@ const MonthlySales = () => {
         </View>
       </View>
       
-      {/* Download Info Modal */}
       <Modal
         transparent={true}
         visible={showInfoModal}

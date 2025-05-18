@@ -38,19 +38,36 @@ export const MenuProvider = ({ children }) => {
     fetchMenus();
   };
 
-  const validateform = ({ menuName, category, price }) => {
+  const validateform = ({ menuName, category, price, description }) => {
     if (!menuName?.trim()) return 'Nama menu tidak boleh kosong';
-    if (!category) return 'Pilih kategori menu';
-    if (!price?.trim() || isNaN(parseInt(price))) return 'Harga harus berupa angka';
+    if (menuName.length > 100) return 'Nama menu maksimal 100 karakter';
+    if (/[\u{1F600}-\u{1F6FF}]/u.test(menuName)) return 'Nama tidak boleh mengandung emoji';
+
+    if (!category || category === 'DEFAULT') return 'Pilih kategori menu';
+
+    const cleanPrice = price?.trim();
+    if (!cleanPrice) return 'Harga tidak boleh kosong';
+    if (!/^\d+$/.test(cleanPrice)) return 'Harga harus berupa angka tanpa titik atau koma';
+
+    const numericPrice = parseInt(cleanPrice);
+    if (numericPrice < 1000) return 'Harga minimal 1000';
+    if (numericPrice > 1000000) return 'Harga terlalu besar';
+
+    if (description) {
+    if (description.length > 150) return 'Deskripsi maksimal 150 karakter';
+    if (/[<>]/.test(description)) return 'Deskripsi tidak boleh mengandung karakter ilegal';
+    if (/[\u{1F600}-\u{1F6FF}]/u.test(description)) return 'deskripsi tidak boleh mengandung emoji';
+
+  }
     return null;
   };
 
   const saveMenu = async (params) => {
     const { menuName, description, price, category, image, restaurantId, navigation, menuId = null, currentImageUrl = '' } = params;
-    const errorMsg = validateform({ menuName, category, price });
+    const errorMsg = validateform({ menuName, category, price, description });
     if (errorMsg) return Alert.alert('Error', errorMsg);
   
-    try {
+    try {setMenus
       setLoading(true);
       await verifyRestaurantOwnership(restaurantId);
   

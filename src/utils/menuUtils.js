@@ -26,7 +26,6 @@ export const uploadMenuImage = async (image) => {
       throw new Error('Gagal mengunggah gambar');
     }
     
-    // Get the public URL
     const { data: urlData } = supabase.storage
       .from('menu-images')
       .getPublicUrl(filePath);
@@ -40,14 +39,12 @@ export const uploadMenuImage = async (image) => {
 
 export const getRestaurantIdForCurrentUser = async () => {
   try {
-    // Get current user
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
       throw new Error('Anda perlu login terlebih dahulu');
     }
     
-    // Get restaurant owned by user
     const { data: restaurant, error } = await supabase
       .from('restaurants')
       .select('id')

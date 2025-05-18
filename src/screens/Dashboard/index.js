@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView} from 'react-native';
 import MonthlySales from '../../components/monthlysales';
 import OrderConfirmation from '../../components/confirmorder';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSales } from '../../context/salesContext';
 import { useRestaurantOrders } from '../../context/orderContext';
 
@@ -25,8 +26,8 @@ const RestaurantDashboard = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.row}>
+    <View style={styles.container}>
+      < SafeAreaView edges={['top']} style={styles.row}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerTitle}>Dashboard Restoran</Text>
           <Text style={styles.headerDate}>{currentDate}</Text>
@@ -34,9 +35,8 @@ const RestaurantDashboard = () => {
         <View style={styles.headerRight}>
           <Text style={styles.headerStatus}>{status}</Text>
         </View>
-      </View>
+      </SafeAreaView>
       
-      {/* Monthly Sales Component */}
       <View style={styles.toprow}>
       <MonthlySales/>
 
@@ -82,7 +82,7 @@ const RestaurantDashboard = () => {
           </ScrollView>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 const styles = StyleSheet.create({
@@ -94,16 +94,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#8A1538',
     padding: 16,
+    paddingTop: 0,
     paddingRight: 0,
     },
     headerLeft: {
-      marginTop: 16,
       flex: 1,
       justifyContent: 'center',
     },
     headerRight: {
       backgroundColor: 'OPEN' ? '#5DA574' : '#FFC107',
-      marginTop: 16,
       paddingVertical: 16,
       paddingHorizontal: 24,
       borderTopLeftRadius: 12,

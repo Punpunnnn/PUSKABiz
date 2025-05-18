@@ -4,6 +4,7 @@ import TabNavigator from './tabNavigator';
 import TransactionDetail from '../screens/transactionsdetails';
 import AddMenu from '../screens/addMenu';
 import EditMenu from '../screens/editMenu';
+import MenuFormScreen from '../screens/menuForm';
 
 const Stack = createStackNavigator();
 
@@ -13,6 +14,7 @@ const AppStack = () => (
     <Stack.Screen name="TransactionDetail" component={TransactionDetail} />
     <Stack.Screen name="AddMenu" component={AddMenu} />
     <Stack.Screen name="EditMenu" component={EditMenu} />
+    <Stack.Screen name="MenuForm" component={MenuFormScreen} />
   </Stack.Navigator>
 );
 

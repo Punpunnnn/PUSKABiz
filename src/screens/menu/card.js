@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Text, Image, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useMenu } from '../../context/menuContext';
 import { useNavigation } from '@react-navigation/native';
@@ -25,7 +24,6 @@ const MenuCard = ({ item, avgRating }) => {
       <View style={styles.actionRow}>
         <TouchableOpacity
           onPress={() => {
-            // Show styled alert before deleting
             Alert.alert(
               'Konfirmasi',
               'Apakah Anda yakin ingin menghapus menu ini?',
@@ -42,7 +40,7 @@ const MenuCard = ({ item, avgRating }) => {
         <TouchableOpacity
           onPress={() => {
             // Navigate to the edit menu screen with the menu ID
-            navigation.navigate('EditMenu', { menuId: item.id });
+            navigation.navigate('MenuForm', { menuId: item.id });
           }}
           style={styles.editBtn}
         >
