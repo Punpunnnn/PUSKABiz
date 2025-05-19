@@ -1,23 +1,24 @@
-// MonthlySales.js
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useSales } from '../../context/salesContext'; // Import the context hook
+import { useSales } from '../../context/salesContext';
+import { downloadLast6MonthsReport } from '../../utils/download';
+import { useAuth } from '../../context/authContext';
 
 const MonthlySales = () => {
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { restaurantId } = useAuth();
   
   const {
     totalProfit,
     growthPercentage,
     isLoading,
-    isDownloading,
     error,
     formattedMonth,
     handlePrevMonth,
     handleNextMonth,
     formatCurrency,
-    downloadSalesReport
   } = useSales();
   
   const showInfo = () => {
@@ -60,7 +61,7 @@ const MonthlySales = () => {
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
             style={[styles.downloadButton, isDownloading && styles.disabledButton]}
-            onPress={downloadSalesReport}
+            onPress={() => downloadLast6MonthsReport(restaurantId, setIsDownloading)}
             disabled={isDownloading}
           >
             {isDownloading ? (

@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fcfcfc',
   },
   safeAreaTop: {
-    backgroundColor: '#8A1538', // maroon
+    backgroundColor: '#8A1538',
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
     marginBottom: 20,

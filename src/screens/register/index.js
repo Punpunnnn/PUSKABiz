@@ -1,29 +1,27 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   Text, TextInput, Pressable, Image,
   ActivityIndicator, TouchableOpacity, Alert,
-  StyleSheet, ScrollView
+  StyleSheet, View
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import * as ImagePicker from 'expo-image-picker';
 import { decode } from 'base64-arraybuffer';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const RegisterScreen = ({ navigation }) => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Step 1
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Step 2
   const [restaurantName, setRestaurantName] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
 
-  // Image picker function
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -50,7 +48,6 @@ const RegisterScreen = ({ navigation }) => {
     setStep(2);
   };
 
-  // Upload image to Supabase
   const uploadImage = async (userId) => {
     if (!image?.base64) return null;
     
@@ -78,25 +75,41 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   const validateRegisterInput = ({ username, email, password, confirmPassword, restaurantName, image }) => {
-    if (!username.trim() || !email.trim() || !password.trim() || !restaurantName.trim()) {
-      return 'Mohon isi semua kolom yang wajib';
-    }
-    if (!email.includes('@')) {
-      return 'Format email tidak valid';
-    }
-    if (password.length < 6) {
-      return 'Password minimal 6 karakter';
-    }
-    if (password !== confirmPassword) {
-      return 'Password tidak cocok';
-    }
-    if (!image) {
-      return 'Mohon pilih gambar kantin';
-    }
-    return null;
-  };
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const usernameRegex = /^[a-zA-Z0-9_]{3,}$/;
+  const restaurantNameRegex = /^[a-zA-Z0-9\s.,'-]{3,}$/;
+
+  if (!username?.trim() || !email?.trim() || !password?.trim() || !restaurantName?.trim()) {
+    return 'Mohon isi semua kolom yang wajib';
+  }
+
+  if (!usernameRegex.test(username)) {
+    return 'Username minimal 3 karakter dan hanya boleh berisi huruf, angka, atau underscore';
+  }
+
+  if (!emailRegex.test(email)) {
+    return 'Format email tidak valid';
+  }
+
+  if (password.length < 6) {
+    return 'Password minimal 6 karakter';
+  }
+
+  if (password !== confirmPassword) {
+    return 'Password dan konfirmasi password tidak cocok';
+  }
+
+  if (!restaurantNameRegex.test(restaurantName)) {
+    return 'Nama kantin minimal 3 karakter dan tidak boleh mengandung simbol aneh';
+  }
+
+  if (!image) {
+    return 'Mohon pilih gambar kantin';
+  }
+  return null;
+};
+
   
-  // Handle registration
   const handleRegister = useCallback(async () => {
     const errorMsg = validateRegisterInput({ username, email, password, confirmPassword, restaurantName, image });
   if (errorMsg) {
@@ -107,7 +120,6 @@ const RegisterScreen = ({ navigation }) => {
     try {
       setIsLoading(true);
       
-      // 1. Buat akun pengguna
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -115,19 +127,25 @@ const RegisterScreen = ({ navigation }) => {
       });
   
       if (authError) throw new Error(authError.message);
+      if (!authData.user) throw new Error("User creation failed");
+
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) throw new Error(signInError.message);
+      const userId = signInData.user.id;
       
-      const userId = authData.user.id;
       const { error: ownerError } = await supabase
         .from('owner')
         .insert([{ id: userId, username }]);
   
       if (ownerError) throw new Error(ownerError.message);
   
-      // 3. Upload gambar
       const imageUrl = await uploadImage(userId);
       if (!imageUrl) throw new Error('Gagal mengunggah gambar');
   
-      // 4. Tambah data restoran
       const { error: restaurantError } = await supabase
         .from('restaurants')
         .insert([{
@@ -139,7 +157,6 @@ const RegisterScreen = ({ navigation }) => {
   
       if (restaurantError) throw new Error(restaurantError.message);
   
-      // 5. Notifikasi sukses
       Alert.alert(
         'Berhasil!',
         'Akun berhasil dibuat. Silakan cek email untuk verifikasi.',
@@ -154,7 +171,7 @@ const RegisterScreen = ({ navigation }) => {
   }, [username, email, password, confirmPassword, restaurantName, image, description, navigation]);
   
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Image source={require('../../../assets/PuskaBiz.png')} style={styles.image} />
       <Text style={styles.subtitle}>Buat akun baru</Text>
 
@@ -175,9 +192,16 @@ const RegisterScreen = ({ navigation }) => {
           <Pressable style={styles.button} onPress={handleNext}>
             <Text style={styles.buttonText}>Lanjut</Text>
           </Pressable>
+
+          <Text style={styles.link}>
+            Sudah punya akun?{' '}
+            <Text style={{ color: '#8A1538' }} onPress={() => navigation.navigate('Login')}>
+              Masuk
+            </Text>
+          </Text>
         </>
       ) : (
-        <>
+        <> 
           <Text style={styles.subbab}>Nama Kantin</Text>
           <TextInput style={styles.input} value={restaurantName} onChangeText={setRestaurantName} placeholder="masukkan nama kantin" />
 
@@ -199,9 +223,31 @@ const RegisterScreen = ({ navigation }) => {
             )}
           </TouchableOpacity>
 
-          <Pressable style={styles.button} onPress={handleRegister} disabled={isLoading}>
-            {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Daftar Akun</Text>}
-          </Pressable>
+          <View style={styles.buttonContainer}>
+            <Pressable
+              style={[styles.backButton]}
+              onPress={() => setStep(1)}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Kembali</Text>
+              )}
+            </Pressable>
+
+            <Pressable
+              style={[styles.submitButton]}
+              onPress={handleRegister}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Daftar Akun</Text>
+              )}
+            </Pressable>
+          </View>
 
           <Text style={styles.link}>
             Sudah punya akun?{' '}
@@ -211,7 +257,7 @@ const RegisterScreen = ({ navigation }) => {
           </Text>
         </>
       )}
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -252,12 +298,34 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#fff',
   },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+    alignSelf: 'center',
+  },
   button: {
     width: '80%',
     alignSelf: 'center',
     backgroundColor: '#5DA574',
     borderRadius: 16,
     paddingVertical: 12,
+  },
+  backButton: {
+     flex: 1,
+    borderRadius: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    backgroundColor: '#888', 
+  },
+  submitButton: {
+     flex: 1,
+    borderRadius: 16,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginHorizontal: 5,
+    backgroundColor: '#5DA574',
   },
   buttonText: {
     color: '#fff',

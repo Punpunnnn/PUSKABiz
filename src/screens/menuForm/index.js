@@ -234,7 +234,7 @@ const MenuFormScreen = ({ route, navigation }) => {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#fcfcfc" />
           ) : (
             <Text style={styles.submitText}>
               {isEditMode ? 'Simpan Perubahan' : 'Simpan Menu'}
@@ -257,7 +257,7 @@ const MenuFormScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#fcfcfc',
   },
   content: {
     padding: 16,

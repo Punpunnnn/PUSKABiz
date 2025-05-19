@@ -19,6 +19,8 @@ const MenuCard = ({ item, avgRating }) => {
         <Switch
           value={item.is_available}
           onValueChange={(val) => toggleAvailability(item.id, val)}
+          trackColor={{ false: '#ccc', true: '#5DA574' }}
+          thumbColor={item.is_available ? '#fff' : '#f4f3f4'}
         />
       </View>
       <View style={styles.actionRow}>
@@ -39,7 +41,6 @@ const MenuCard = ({ item, avgRating }) => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            // Navigate to the edit menu screen with the menu ID
             navigation.navigate('MenuForm', { menuId: item.id });
           }}
           style={styles.editBtn}

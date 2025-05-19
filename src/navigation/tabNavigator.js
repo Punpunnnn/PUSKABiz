@@ -1,4 +1,3 @@
-import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import RestaurantDashboard from '../screens/Dashboard';
 import Transactions from '../screens/transactions';
@@ -9,7 +8,18 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => (
-  <Tab.Navigator screenOptions={{ headerShown: false }}>
+  <Tab.Navigator
+  screenOptions={({ route }) => ({
+    headerShown: false,
+    tabBarActiveTintColor: '#8A1538', // warna aktif (misalnya maroon)
+    tabBarInactiveTintColor: '#999',  // warna nonaktif
+    tabBarStyle: {
+      marginBottom: 5,
+      marginTop: 5,
+      backgroundColor: '#fcfcfc',
+    },
+  })}
+>
     <Tab.Screen 
       name="Dashboard" 
       component={RestaurantDashboard} 

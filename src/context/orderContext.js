@@ -1,14 +1,22 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from './authContext';
 
 const RestaurantOrderContext = createContext();
 
-export const RestaurantOrderProvider = ({ children, restaurantId }) => {
+export const RestaurantOrderProvider = ({ children }) => {
+  const { restaurantId } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const getRestaurantOrders = async (id) => {
+  const getRestaurantOrders = async () => {
+    if (!restaurantId) {
+      console.log('No restaurant ID available');
+      return;
+    }
+    
+    console.log('Fetching orders for restaurant ID:', restaurantId);
     try {
       setLoading(true);
       setError(null);
@@ -27,12 +35,19 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
           type,
           notes
         `)
-        .eq('restaurants_id', id)
+        .eq('restaurants_id', restaurantId)
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;
 
       const orderIds = ordersData.map(order => order.id);
+
+      // Jika tidak ada pesanan, langsung set orders kosong
+      if (orderIds.length === 0) {
+        setOrders([]);
+        setLoading(false);
+        return;
+      }
 
       const { data: allOrderDishes, error: dishesError } = await supabase
         .from('order_dishes')
@@ -160,24 +175,25 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
         );
       }
 
-        if (status === 'COMPLETED' && orderData.used_coin === 0) {
-          const { total, user_id } = orderData;
-          console.log('Total belanja:', total);
-          console.log('User ID:', user_id);
-        
-          // Jika total belanja >= 10.000, beri koin (1% dari total)
-          if (total >= 10000) {
-            const coinToAdd = Math.floor(total * 0.01); // Misal 15000 => 150
-            console.log('Koin yang akan diberikan:', coinToAdd);
-        
-            updates.push(
-              supabase.rpc('increment_coins', {
-                user_id_param: user_id,
-                coin_amount: coinToAdd,
-              })
-            );
-          }
+      if (status === 'COMPLETED' && orderData.used_coin === 0) {
+        const { total, user_id } = orderData;
+        console.log('Total belanja:', total);
+        console.log('User ID:', user_id);
+      
+        // Jika total belanja >= 10.000, beri koin (1% dari total)
+        if (total >= 10000) {
+          const coinToAdd = Math.floor(total * 0.01); // Misal 15000 => 150
+          console.log('Koin yang akan diberikan:', coinToAdd);
+      
+          updates.push(
+            supabase.rpc('increment_coins', {
+              user_id_param: user_id,
+              coin_amount: coinToAdd,
+            })
+          );
         }
+      }
+      
       updates.push(
         supabase
           .from('orders')
@@ -206,45 +222,35 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
   };
 
   const refreshOrders = () => {
-    if (restaurantId) {
-      getRestaurantOrders(restaurantId);
-    }
+    getRestaurantOrders();
   };
 
-  const updateUserCoins = async (userId, coinsToAdd) => {
-    try {
-      const { data: userData, error: fetchError } = await supabase
-        .from('profiles')
-        .select('coins')
-        .eq('id', userId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const currentCoins = userData.coins || 0;
-      const newCoins = currentCoins + coinsToAdd;
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ coins: newCoins })
-        .eq('id', userId);
-        console.log('Updating user ID:', userId);
-
-
-      console.log('Updated coins:', newCoins);
-
-      if (updateError) throw updateError;
-
-      return { success: true, coinsAdded: coinsToAdd };
-    } catch (error) {
-      console.error('Error updating user coins:', error);
-      return { success: false, error: error.message };
-    }
-  };
-
+  // Tidak lagi diperlukan karena sudah dikelola di AuthContext
   useEffect(() => {
-    if (!restaurantId) return;
-    getRestaurantOrders(restaurantId);
+    if (restaurantId) {
+      getRestaurantOrders();
+    }
+  }, [restaurantId]);
+
+  // Refresh orders ketika status login berubah
+  useEffect(() => {
+    // Subscribe to realtime changes in orders table
+    const ordersSubscription = supabase
+      .channel('restaurant_orders')
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'orders',
+        filter: `restaurants_id=eq.${restaurantId}`
+      }, () => {
+        console.log('Orders changed, refreshing...');
+        refreshOrders();
+      })
+      .subscribe();
+
+    return () => {
+      ordersSubscription.unsubscribe();
+    };
   }, [restaurantId]);
 
   return (
@@ -256,7 +262,6 @@ export const RestaurantOrderProvider = ({ children, restaurantId }) => {
         getRestaurantOrders,
         refreshOrders,
         updateOrderStatus,
-        updateUserCoins,
         getRestaurantOrder
       }}
     >

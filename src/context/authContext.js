@@ -9,20 +9,16 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [resettingPassword, setResettingPassword] = useState(false);
 
-  // Reset auth saat flow reset password aktif
   useEffect(() => {
     if (resettingPassword) {
-      console.log("Password reset flow active - clearing auth state");
       setAuthUser(null);
       setRestaurantId(null);
     }
   }, [resettingPassword]);
 
-  // Ambil session awal + pasang listener perubahan auth
   useEffect(() => {
     const setup = async () => {
       if (resettingPassword) {
-        console.log("Skipping session setup - resetting password");
         setLoading(false);
         return;
       }
@@ -32,19 +28,15 @@ export const AuthProvider = ({ children }) => {
         if (error) throw error;
 
         const sessionUser = data?.session?.user;
-        console.log("Fetched session user:", sessionUser);
         setAuthUser(sessionUser);
       } catch (error) {
-        console.error("Error fetching session:", error.message);
       } finally {
         setLoading(false);
       }
     };
 
     const handleAuthChange = async (event, session) => {
-      console.log("Auth state changed:", event, session);
       if (resettingPassword) {
-        console.log("Ignoring auth state change during password reset");
         return;
       }
 
@@ -59,8 +51,6 @@ export const AuthProvider = ({ children }) => {
       authListener.subscription.unsubscribe();
     };
   }, [resettingPassword]);
-
-  // Fetch restaurantId ketika authUser berubah
   useEffect(() => {
     const fetchRestaurantId = async (ownerId) => {
       console.log("Fetching restaurant ID for owner:", ownerId);
@@ -71,10 +61,9 @@ export const AuthProvider = ({ children }) => {
         .single();
 
       if (!error && data) {
-        console.log("Restaurant ID fetched:", data.id);
+
         setRestaurantId(data.id);
       } else {
-        console.log("No restaurant found for this owner");
         setRestaurantId(null);
       }
     };

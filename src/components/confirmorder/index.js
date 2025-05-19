@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useCallback,useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Alert } from 'react-native';
 import { useRestaurantOrders } from '../../context/orderContext';
 import { useNavigation } from '@react-navigation/native';
@@ -9,11 +9,33 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
   const { updateOrderStatus, loading } = useRestaurantOrders();
   const navigation = useNavigation();
 
-  
-  const handleViewDetail = () => {
-    // Logic to view order details
-    navigation.navigate('TransactionDetail', { orderId: order.id }); // Replace 'OrderDetail' with the actual screen name('View details for order:', order.id);
-  };
+  const ConfirmationModal = ({ visible, onConfirm, onCancel, title, message, loading }) => (
+  <Modal
+    transparent
+    visible={visible}
+    animationType="fade"
+    onRequestClose={onCancel}
+  >
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        <Text style={styles.modalTitle}>{title}</Text>
+        <Text style={styles.modalText}>{message}</Text>
+        <View style={styles.modalButtons}>
+          <TouchableOpacity style={styles.modalButtonYes} onPress={onConfirm} disabled={loading}>
+            <Text style={styles.modalButtonTextYes}>Ya</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.modalButtonNo} onPress={onCancel} disabled={loading}>
+            <Text style={styles.modalButtonTextNo}>Tidak</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  </Modal>
+);
+
+  const handleViewDetail = useCallback(() => {
+  navigation.navigate('TransactionDetail', { orderId: order.id });
+}, [navigation, order.id]);
   
   const handleReject = () => {
     setShowRejectModal(true);
@@ -31,7 +53,6 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
         throw new Error(result.error || 'Failed to accept order');
       }
   
-      // Notify parent component about the status change if needed
       if (onOrderStatusChange) {
         onOrderStatusChange(order.id, 'COOKING');
       }
@@ -52,7 +73,7 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
         throw new Error(result.error || 'Failed to reject order');
       }
       if (onOrderStatusChange) {
-        onOrderStatusChange(order.id, 'REJECTED');
+        onOrderStatusChange(order.id, 'CANCELLED');
       }
   
       setShowRejectModal(false);
@@ -116,84 +137,31 @@ const OrderConfirmation = ({ order, onOrderStatusChange }) => {
     </View>
   </View>
 
+<ConfirmationModal
+  visible={showAcceptModal}
+  onConfirm={confirmAccept}
+  onCancel={() => setShowAcceptModal(false)}
+  title="Konfirmasi"
+  message="Apakah kamu yakin ingin menerima order ini?"
+  loading={loading}
+/>
+
+<ConfirmationModal
+  visible={showRejectModal}
+  onConfirm={confirmReject}
+  onCancel={() => setShowRejectModal(false)}
+  title="Konfirmasi"
+  message="Apakah kamu yakin ingin menolak order ini?"
+  loading={loading}
+/>
   
-      
-      {/* Accept Order Confirmation Modal */}
-      <Modal
-        transparent={true}
-        visible={showAcceptModal}
-        animationType="fade"
-        onRequestClose={() => setShowAcceptModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Konfirmasi</Text>
-            <Text style={styles.modalText}>
-              Apakah kamu yakin ingin menerima order ini?
-            </Text>
-            
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={styles.modalButtonYes}
-                onPress={confirmAccept}
-                disabled={loading}
-              >
-                <Text style={styles.modalButtonTextYes}>Ya</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.modalButtonNo}
-                onPress={() => setShowAcceptModal(false)}
-                disabled={loading}
-              >
-                <Text style={styles.modalButtonTextNo}>Tidak</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-      
-      {/* Reject Order Confirmation Modal */}
-      <Modal
-        transparent={true}
-        visible={showRejectModal}
-        animationType="fade"
-        onRequestClose={() => setShowRejectModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Konfirmasi</Text>
-            <Text style={styles.modalText}>
-              Apakah kamu yakin ingin menolak order ini?
-            </Text>
-            
-            <View style={styles.modalButtons}>
-              <TouchableOpacity 
-                style={styles.modalButtonYes}
-                onPress={confirmReject}
-                disabled={loading}
-              >
-                <Text style={styles.modalButtonTextYes}>Ya</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.modalButtonNo}
-                onPress={() => setShowRejectModal(false)}
-                disabled={loading}
-              >
-                <Text style={styles.modalButtonTextNo}>Tidak</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   orderCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#fcfcfc',
   borderRadius: 12,
   padding: 16,
   marginBottom: 12,

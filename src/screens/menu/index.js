@@ -79,9 +79,11 @@ const MenuScreen = () => {
     </View>
       </SafeAreaView>
 
-      {loading ? (
-        <ActivityIndicator size="large" color="#800000" />
-      ) : (
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#800000" />
+          </View>
+        ) : (
         <FlatList
           data={filteredMenus}
           keyExtractor={(item) => item.id.toString()}
@@ -143,7 +145,7 @@ const styles = {
     paddingVertical: 10,
     marginHorizontal: 4,
     borderRadius: 8,
-    backgroundColor: '#fff',
+    backgroundColor: '#fcfcfc',
     color: '#000',
     borderWidth: 1,
     borderColor: '#ccc',
@@ -169,7 +171,7 @@ const styles = {
     elevation: 5
   },
   addButtonText: {
-    color: '#fff',
+    color: '#fcfcfc',
     fontWeight: 'bold',
     fontSize: 14
   }
