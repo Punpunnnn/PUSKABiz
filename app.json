@@ -4,7 +4,7 @@
     "slug": "PUSKABiz",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/puskaBiz.png",
+    "icon": "./assets/PuskaBiz.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
