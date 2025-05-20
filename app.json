@@ -8,21 +8,21 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/PUSKABiz.png",
       "resizeMode": "contain",
       "backgroundColor": "#fcfcfc"
     },
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#fcfcfc"
-      }
+      "package": "com.puskabiz.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "157d2f96-5e33-4112-93f1-a0182e9e54e9"
+      }
     }
   }
 }
