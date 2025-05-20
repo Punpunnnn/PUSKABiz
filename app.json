@@ -4,11 +4,11 @@
     "slug": "PUSKABiz",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/puskaBiz.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/PUSKABiz.png",
+      "image": "./assets/PuskaBiz.png",
       "resizeMode": "contain",
       "backgroundColor": "#fcfcfc"
     },
