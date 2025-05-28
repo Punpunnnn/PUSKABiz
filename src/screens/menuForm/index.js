@@ -116,12 +116,7 @@ const MenuFormScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!restaurantId) {
-      Alert.alert('Error', 'ID Restoran tidak ditemukan');
-      return;
-    }
-
+  const OnSaveMenu = async () => {
     setLoading(true);
     try {
       await saveMenu({
@@ -230,7 +225,7 @@ const MenuFormScreen = ({ route, navigation }) => {
       <View style={styles.footerButtons}>
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={handleSubmit}
+          onPress={OnSaveMenu}
           disabled={loading}
         >
           {loading ? (

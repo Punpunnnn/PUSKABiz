@@ -169,6 +169,14 @@ const RegisterScreen = ({ navigation }) => {
       setIsLoading(false);
     }
   }, [username, email, password, confirmPassword, restaurantName, image, description, navigation]);
+
+  const onPressRegister = async () => {
+  try {
+    await handleRegister();
+  } catch (error) {
+    Alert.alert('Registrasi Gagal', error.message || 'Terjadi kesalahan saat registrasi.');
+  }
+};
   
   return (
     <SafeAreaView style={styles.container}>
@@ -238,7 +246,7 @@ const RegisterScreen = ({ navigation }) => {
 
             <Pressable
               style={[styles.submitButton]}
-              onPress={handleRegister}
+              onPress={onPressRegister}
               disabled={isLoading}
             >
               {isLoading ? (
